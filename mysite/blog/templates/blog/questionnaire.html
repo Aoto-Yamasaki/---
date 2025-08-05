@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>調査アンケート</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #d0d0d0;
+        }
+        .yes { background-color: #d1f0d1; }
+        .no { background-color: #f7d1d1; }
+        .dontknow { background-color: #e6e6fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>このサービスを今後も使いたいと思いますか？</h2>
+        <form method="post" action="{% url 'questionnaire' %}">
+            {% csrf_token %}
+            <button type="submit" name="answer" value="はい" class="btn yes">はい</button>
+            <button type="submit" name="answer" value="いいえ" class="btn no">いいえ</button>
+            <button type="submit" name="answer" value="わからない" class="btn dontknow">わからない</button>
+        </form>
+    </div>
+</body>
+</html>
