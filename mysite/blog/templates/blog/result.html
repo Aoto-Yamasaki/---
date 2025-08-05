@@ -13,17 +13,11 @@
             box-shadow: none;
             padding: 40px 0 40px 0;
         }
-        .chart {
-            width: 200px;
-            height: 140px;
+        .chart{
+            width: min(380px, 90vw);   /* 画面に合わせて可変 */
             margin: 0 auto 24px;
-            background: #eef;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
         }
+        .chart canvas{ width:100%; height:auto; }  /* キャンバスを枠いっぱい */
         .explanation {
             text-align: center;
             margin-bottom: 20px;
@@ -39,18 +33,24 @@
             padding: 18px 10px;
             box-shadow: 0 1px 4px #dde7f3;
         }
-        .tab-menu {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
+        .tab-menu{
+            display:flex;
+            gap:8px;
+            justify-content:center;
+            flex-wrap:wrap;         /* 狭い幅で自動改行 */
         }
-        .tab-menu button {
-            padding: 10px 5%;
-            border-radius: 12px;
-            border: 1px solid #bbb;
-            background: #f4f4f4;
-            cursor: pointer;
-            font-size: clamp(12px,2.0vw,16px);
+        .tab-menu button{
+            min-width:90px;
+            padding:8px 14px;
+            border-radius:12px;
+            border:1px solid #bbb;
+            background:#f4f4f4;
+            cursor:pointer;
+            font-size:clamp(12px,1.6vw,15px);
+        }
+        .tab-menu button.active{
+            background:#aac7ee;
+            font-weight:600;
         }
         /* ====== 商品エリアの外枠 ====== */
         .products-wrapper {
@@ -95,53 +95,119 @@
         }
         @media (max-width: 900px) {
             .products { grid-template-columns: repeat(2, 1fr); }
-            .chart { width: 140px; height: 90px; }
             .products-wrapper { padding: 20px 2px; }
         }
         @media (max-width: 600px) {
             .products { grid-template-columns: 1fr; }
-            .chart { width: 100px; height: 60px; }
             .products-wrapper { padding: 12px 1px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="chart">結果<br>チャート</div>
+        <div class="chart">
+            <canvas id="myRadarChart" width="240" height="210"></canvas>
+        </div>
         <div class="explanation">
             解説文:--------------------------------------
         </div>
         <!-- タブメニューの外側の枠 -->
         <div class="tab-menu-wrapper">
             <div class="tab-menu">
-                <button>地震</button>
-                <button>津波</button>
-                <button>噴火</button>
-                <button>備蓄品</button>
-                <button>土砂災害</button>
+                <button id="tab-earthquake"  onclick="showProducts('earthquake')">earthquake</button>
+                <button id="tab-tsunami"     onclick="showProducts('tsunami')">tsunami</button>
+                <button id="tab-eruption"    onclick="showProducts('eruption')">eruption</button>
+                <button id="tab-stockpile"   onclick="showProducts('stockpile')">stockpile</button>
+                <button id="tab-landslide"   onclick="showProducts('landslide')">landslide&nbsp;disaster</button>
             </div>
         </div>
         <!-- 商品エリアの外側の枠 -->
         <div class="products-wrapper">
-            <div class="products">
-                <div class="product">
-                    <img src="商品画像URL1" alt="商品1">
-                    <div class="product-name"><a href="#">商品名・商品リンク</a></div>
-                </div>
-                <div class="product">
-                    <img src="商品画像URL2" alt="商品2">
-                    <div class="product-name"><a href="#">商品名・商品リンク</a></div>
-                </div>
-                <div class="product">
-                    <img src="商品画像URL3" alt="商品3">
-                    <div class="product-name"><a href="#">商品名・商品リンク</a></div>
-                </div>
-                <div class="product">
-                    <img src="商品画像URL4" alt="商品4">
-                    <div class="product-name"><a href="#">商品名・商品リンク</a></div>
-                </div>
-            </div>
+                <div class="products" id="products-area"></div>
         </div>
-    </div>
+        
+    <!-- ---------- ② all_products を安全に埋め込む ---------- -->
+    {{ all_products|json_script:"products-data" }}
+
+    <!-- ---------- ③ タブ切り替え JS（1 本だけ） ---------- -->
+    <script>
+        const allProducts = JSON.parse(
+            document.getElementById('products-data').textContent
+        );
+        const TAB_KEYS = ['earthquake','tsunami','eruption','stockpile','landslide'];
+
+        function showProducts(tab){
+            const area = document.getElementById('products-area');
+            let html='';
+            (allProducts[tab]||[]).forEach(p=>{
+            html += `<div class="product">
+                       <img src="${p.img}" alt="${p.name}">
+                       <div class="product-name"><a href="${p.url}" target="_blank">${p.name}</a></div>
+                     </div>`;
+            });
+            area.innerHTML = html || '<p>商品がありません</p>';
+
+            TAB_KEYS.forEach(t=>{
+                document.getElementById('tab-'+t)
+                .classList.toggle('active', t===tab);
+            });
+        }
+
+        /* 初期表示 */
+        showProducts('{{ current_tab|default:"earthquake" }}');
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
+    <script>
+        var ctx = document.getElementById("myRadarChart").getContext('2d');
+        var myRadarChart = new Chart(ctx, 
+            {
+            type: 'radar',
+            data: 
+            {
+            labels: 
+            [
+                ["地震", ""],
+                ["津波"],
+                ["噴火"],
+                ["備蓄品"],
+                ["土砂災害"]
+            ],            
+            datasets: 
+            [{
+                data: [4, 1, 2, 3, 2],
+                backgroundColor: 'RGBA(225,95,150, 0.5)',
+                borderColor: 'RGBA(225,95,150, 1)',
+                borderWidth: 1,
+                pointBackgroundColor: 'RGB(46,106,177)'
+            }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'クイズ結果',
+                    fontSize: 20 
+                },
+                legend: {
+                    display: false 
+                },
+                scale: {
+                    pointLabels: {
+                        fontSize: 16
+                    },
+                    ticks: {
+                        suggestedMin: 0,
+                        suggestedMax: 5, // 問題数
+                        stepSize: 1,
+                        fontSize: 18,
+                        callback: function(value) {
+                          return value + '点';
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
+
+

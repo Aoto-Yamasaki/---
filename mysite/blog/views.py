@@ -43,5 +43,47 @@ def home(request):
 # Create your views here.
 
 #TODO：ページ遷移の細かい処理の記述
+import requests
+
 def result_view(request):
-    return render(request, 'blog/result.html')
+    tab_list = [
+    ('earthquake', '防災 地震'),
+    ('tsunami',     '津波 グッズ'),
+    ('eruption',    '火山 避難'),
+    ('stockpile',   '防災 備蓄品'),
+    ('landslide',   '土砂災害 グッズ'),
+    ]
+
+    api_url = 'https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601'
+    application_id = '1038808457986695199'
+
+    all_products = {}
+    for tab_key, keyword in tab_list:
+        params = {
+            'applicationId': application_id,
+            'keyword': keyword,
+            'hits': 4,
+        }
+        res = requests.get(api_url, params=params)
+        items = res.json().get('Items', [])
+        products = []
+        for item in items:
+            data = item['Item']
+            products.append({
+                'img': data['mediumImageUrls'][0]['imageUrl'],
+                'url': data['itemUrl'],
+                'name': data['itemName'],
+            })
+        all_products[tab_key] = products
+
+    current_tab = request.GET.get('tab', 'earthquake')
+    products = all_products.get(current_tab, [])
+
+    context = {
+    'all_products': all_products,
+    'current_tab': current_tab,
+    'products': products,   # テンプレの for 用（JSだけで良ければ無くてもOK）
+    }
+    return render(request, 'blog/result.html', context)
+
+
