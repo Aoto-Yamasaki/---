@@ -41,3 +41,7 @@ def questionnaire_view(request):
 def home(request):
     return render(request, 'blog/home.html')
 # Create your views here.
+
+#TODO：ページ遷移の細かい処理の記述
+def result_view(request):
+    return render(request, 'blog/result.html')
