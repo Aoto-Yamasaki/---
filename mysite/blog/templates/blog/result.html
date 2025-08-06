@@ -2,13 +2,14 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>結果ページ</title>
     <style>
-        body { font-family: sans-serif; background: #fafafa; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #fafafa; margin: 0; padding: 0; min-width: 320px;}
         .container {
             width: 100vw;
             min-height: 100vh;
-            background: #fff;
+            background: #fafafa;
             border-radius: 0;
             box-shadow: none;
             padding: 40px 0 40px 0;
@@ -123,9 +124,9 @@
         </div>
         <!-- 商品エリアの外側の枠 -->
         <div class="products-wrapper">
-                <div class="products" id="products-area"></div>
+            <div class="products" id="products-area"></div>
         </div>
-        
+    </div>
     <!-- ---------- ② all_products を安全に埋め込む ---------- -->
     {{ all_products|json_script:"products-data" }}
 
@@ -158,6 +159,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
     <script>
+        const chartData = {{ scores|safe }};
         var ctx = document.getElementById("myRadarChart").getContext('2d');
         var myRadarChart = new Chart(ctx, 
             {
@@ -174,7 +176,7 @@
             ],            
             datasets: 
             [{
-                data: [4, 1, 2, 3, 2],
+                data: chartData,
                 backgroundColor: 'RGBA(225,95,150, 0.5)',
                 borderColor: 'RGBA(225,95,150, 1)',
                 borderWidth: 1,

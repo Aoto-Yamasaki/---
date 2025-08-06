@@ -1,5 +1,6 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse
+import json
 
 def step1_view(request):
     if request.method == 'POST':
@@ -54,6 +55,13 @@ def result_view(request):
     ('landslide',   '土砂災害 グッズ'),
     ]
 
+    earthquake_score = 4
+    tsunami_score = 4
+    eruption_score = 5
+    stockpile_score = 4
+    landslide_score = 5
+    scores = [earthquake_score, tsunami_score, eruption_score, stockpile_score, landslide_score]
+
     api_url = 'https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601'
     application_id = '1038808457986695199'
 
@@ -82,7 +90,8 @@ def result_view(request):
     context = {
     'all_products': all_products,
     'current_tab': current_tab,
-    'products': products,   # テンプレの for 用（JSだけで良ければ無くてもOK）
+    'products': products, 
+    'scores': json.dumps(scores)  # テンプレの for 用（JSだけで良ければ無くてもOK）
     }
     return render(request, 'blog/result.html', context)
 
